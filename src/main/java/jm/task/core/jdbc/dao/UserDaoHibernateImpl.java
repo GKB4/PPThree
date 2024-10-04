@@ -3,10 +3,8 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,21 +16,26 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-    /*     try (Session session = Util.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            String sql = "CREATE TABLE IF NOT EXISTS user (id INT, name VARCHAR(20) not null, lastname VARCHAR(20) not null, age INT not null, PRIMARY KEY (id))";
+        try (Session session = Util.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            String sql = "CREATE TABLE IF NOT EXISTS Users (id INT, name VARCHAR(20) not null, lastname VARCHAR(20) not null, age INT not null, PRIMARY KEY (id))";
             Query query = session.createSQLQuery(sql).addEntity(User.class);
-            transaction.commit();
+            query.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    */
-        new UserDaoJDBCImpl().createUsersTable();
     }
 
     @Override
     public void dropUsersTable() {
-        new UserDaoJDBCImpl().dropUsersTable();
+        try (Session session = Util.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            String sql = "DROP TABLE IF EXISTS Users";
+            Query query = session.createSQLQuery(sql);
+            query.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -41,9 +44,10 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             User user = new User(name, lastName, age);
             session.persist(user);
+            //transaction.commit();
             session.flush();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -54,7 +58,7 @@ public class UserDaoHibernateImpl implements UserDao {
             session.remove(session.find(User.class, id));
             session.flush();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -65,7 +69,7 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             userList = session.createQuery("FROM User", User.class).list();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
         return userList;
     }
